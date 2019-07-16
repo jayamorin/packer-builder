@@ -1,17 +1,33 @@
 FROM ubuntu:18.04
 
-ENV VIRTUALBOX_VERSION="v1.13.4"
-ENV PACKER_VERSION="v2.13.0"
-ENV VAGRANT_VERSION="2.2.5"
+ENV packer_version="1.4.2"
+ENV virtualbox_version="6.0"
 
 RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y \
- wget \
- curl \
+    wget \
+    curl \
+    unzip \
+    ca-certificates \
+    software-properties-common \
+    git
+
+RUN wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | apt-key add - \
+ && wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | apt-key add - \
+ && add-apt-repository -y "deb [arch=amd64] http://download.virtualbox.org/virtualbox/debian $(lsb_release -cs) contrib" \
+ && apt-get update \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+	virtualbox-${virtualbox_version} \
  && rm -rf /var/lib/apt/lists/*
 
-RUN wget https://releases.hashicorp.com/vagrant/${VAGRANT_VERSION}/vagrant_${VAGRANT_VERSION}_x86_64.deb \
- && sha256sum vagrant_${VAGRANT_VERSION}_x86_64.deb \
- | grep $(curl -s https://releases.hashicorp.com/vagrant/${VAGRANT_VERSION}/vagrant_${VAGRANT_VERSION}_SHA256SUMS) \
- && dpkg -i vagrant_${VAGRANT_VERSION}_x86_64.deb \
- && rm -rf vagrant_${VAGRANT_VERSION}_x86_64.deb
+RUN wget https://releases.hashicorp.com/packer/${packer_version}/packer_${packer_version}_linux_amd64.zip \
+ && curl -s https://releases.hashicorp.com/packer/${packer_version}/packer_${packer_version}_SHA256SUMS \
+ | grep $(sha256sum packer_${packer_version}_linux_amd64.zip | awk '{print $1}') \
+ && unzip packer_${packer_version}_linux_amd64.zip \
+ && mv packer /usr/local/bin/packer \
+ && chmod +x /usr/local/bin/packer \
+ && rm -f packer_${packer_version}_linux_amd64.zip
+
+ENTRYPOINT ["/usr/local/bin/packer"]
+
+CMD ["--help"]
