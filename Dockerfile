@@ -23,6 +23,7 @@ RUN wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | apt-k
 RUN vbox_version=$(dpkg -l | grep virtualbox | awk '{print $3}' | sed -e 's/\([0-9\.]*\)\-.*/\1/') ; \
     wget http://download.virtualbox.org/virtualbox/${vbox_version}/Oracle_VM_VirtualBox_Extension_Pack-${vbox_version}.vbox-extpack \
  && echo "y" | VBoxManage extpack install Oracle_VM_VirtualBox_Extension_Pack-${vbox_version}.vbox-extpack \
+ && /sbin/vboxconfig \
  && rm -f Oracle_VM_VirtualBox_Extension_Pack-${vbox_version}.vbox-extpack
 
 RUN wget https://releases.hashicorp.com/packer/${packer_version}/packer_${packer_version}_linux_amd64.zip \
